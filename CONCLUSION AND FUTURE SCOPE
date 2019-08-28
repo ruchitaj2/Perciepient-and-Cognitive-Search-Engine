@@ -1,0 +1,8 @@
+This project tries to serve a better search engine which would be helpful for a enterprise or organization.
+
+Youtube has a ridiculously unfair advantage right now. You can quite literally spam a video (with terrible links that would get any other site penalized) and rank at the top of the first page of google. Big loophole there. It's funny that google will penalize you for spamming your sites but reward you from spamming theirs. Google continues to return results for very low quality sites and content farms like Yahoo! Answers and WikiHow.
+
+Excessive focus on the algorithm means that entire classes of queries, such as medical queries, are still overrun with exact match domains and poor quality advice.
+Google chooses to display results as "10 blue links," so it can be hard to see the topics (or clusters) that results are divided up into. If you search for “Big Data” on Google, you see 3 links related to the Hadoop or Distributed File System, but they're #7, #8 and #10 and you might not even notice them. 
+
+This project aims at providing an efficient search engine that tries to overcome the drawbacks above and improved the search performed by these search engines. The project aims at finding the most relative text from the top predefined number of results and displaying the most relevant and informative text to the user than providing results based on a page ranking algorithm
