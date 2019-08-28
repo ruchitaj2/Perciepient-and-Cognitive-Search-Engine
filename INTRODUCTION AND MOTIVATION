@@ -1,0 +1,29 @@
+First thing that we refer to on the internet when we need to get some information on a
+topic is search on a search engine which ranks websites based on the views and popularity with
+a Page Rank algorithm that makes use of various factors that mainly consider the relativity to
+various and the user usage and reference. Previously ranked high rated and valued domains
+and keywords tend to be in the top search results.
+A website with higher Page Rank tends to appear higher in the results and it doesn’t always
+imply efficient and effective results. A student looking for details on a particular topic might be
+suggested a result from Yahoo Answers which necessarily answer his doubts and gives an
+informative theory about his topic. 
+But a website on the second page might have more text that is more relative to his search query and might provide him better understanding of the topic. This project revolves around the idea of providing a dashboard for the user where he can get important paragraphs and texts from a pool of relative websites and present it to the user based on his search query. This allows the user to have more relative images and videos and text on the website and thus being more efficient than the conventional search pages.
+The project is an attempt to build a smarter search engine. Existing search engines use extensive
+crawlers and index these results based on the content, metadata and the sites that link to it.
+When a user enters a search query in an existing search engine, he is presented with a number
+of relevant links which are ranked by some proprietary algorithms (eg: PageRank) and a few
+sentences from that page containing the keyword.
+Our project tries to ease the process of searching for a particular topic on the internet. The
+approach to search that has been noticed in students researching a particular topic is to open
+up numerous tabs and then go through it manually.
+Our project will serve as a dashboard for all the results. It will use the index of existing search
+engines, but it will present to the user a summary of the content of the top results. It will
+summarize the content with emphasis on the keyword/s in the search query. It will also mine and
+summarize academic papers that are freely available. All these summaries will have links to their
+full pages.
+If it is a current hot-topic, it will have presence on social media such as Twitter too. We will include
+an option to search Twitter feeds, which will display to the user prominent tweets (based on no.
+of RTs/favorites/likes) with a brief sentiment analysis on that feed.
+
+
+
