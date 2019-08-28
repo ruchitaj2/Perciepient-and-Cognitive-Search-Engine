@@ -1,0 +1,318 @@
+4.	Intializing Hbase
+
+The very first step is to intialize the hadoop hbase.Hbase setup is required inorder to store the huge datasets.These datasets are the ones which are formed huge documents and the links within the sites that are crawled.We can maintain one or more domains,so hbase storage is required for these large data.The configuration file need to be changed inorder to create hadoop hbase.
+
+------> Setting up HBase
+-> edit $HBASE_ROOT/conf/hbase-site.xml and add
+
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>home/madhura/Proj/Storage/hbase</value>
+  </property>
+<property>
+  <name>hbase.cluster.distributed</name>
+<value>false</value>
+</property>
+</configuration>
+
+-> edit $HBASE_ROOT/conf/hbase-env.sh and enable JAVA_HOME and set it to the proper path:
+-# export JAVA_HOME=/usr/java/jdk1.6.0/
++export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+
+> Start HBase using command below:
+$HBASE_ROOT/bin/start-hbase.sh
+    Hbase running can be verified by the command : http://localhost:60010
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ Fig 5.1 hadoop hbase cluster
+
+
+
+II. Initialising nutch crawler
+Crawler  made by  apache is used inorder to crawl the sites by injecting the various urls.The ulrls crawled is injected to the hbase.
+-------> Setting up Nutch
+
+-> enable the HBase dependency in $NUTCH_ROOT/ivy/ivy.xml by uncommenting the line
+
+<dependency org="org.apache.gora" name="gora-hbase" rev="0.5" conf="*->default" />
+configure the HBase adapter by editing the $NUTCH_ROOT/conf/gora.properties:
+
+-#gora.datastore.default=org.apache.gora.mock.store.MockDataStore
++gora.datastore.default=org.apache.gora.hbase.store.HBaseStore
+
+-> build Nutch
+
+$ cd $NUTCH_ROOT
+$ ant clean
+$ ant runtime
+
+This can take a while(about 20 minutes) and creates $NUTCH_ROOT/runtime/local.
+
+-> configure Nutch by editing $NUTCH_ROOT/runtime/local/conf/nutch-site.xml:
+
+<configuration>
+  <property>
+    <name>http.agent.name</name>
+    <value>mycrawlername</value> <!-- this can be changed to something more sane if you like -->
+  </property>
+  <property>
+    <name>http.robots.agents</name>
+    <value>mycrawlername</value> <!-- this is the robot name we're looking for in robots.txt files -->
+  </property>
+  <property>
+    <name>storage.data.store.class</name>
+    <value>org.apache.gora.hbase.store.HBaseStore</value>
+  </property>
+  <property>
+    <name>plugin.includes</name>
+    <!-- do **NOT** enable the parse-html plugin, if you want proper HTML parsing. Use something like parse-tika! -->
+    <value>protocol-httpclient|urlfilter-regex|parse-(text|tika|js)|index-(basic|anchor)|query-(basic|site|url)|response-(json|xml)|summary-basic|scoring-opic|urlnormalizer-(pass|regex|basic)|indexer-elastic</value>
+  </property>
+  <property>
+    <name>db.ignore.external.links</name>
+    <value>true</value> <!-- do not leave the seeded domains (optional) -->
+  </property>
+  <property>
+    <name>elastic.host</name>
+    <value>localhost</value> <!-- where is ElasticSearch listening -->
+  </property>
+</configuration>
+
+-> configure HBase integration by editing $NUTCH_ROOT/runtime/local/conf/hbase-site.xml:
+
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>home/madhura/Proj/Storage/hbase</value> <!-- same path as you've given for HBase above -->
+  </property>
+  <property>
+    <name>hbase.cluster.distributed</name>
+   <value>false</value>
+</property>
+</configuration>
+
+ Everything is now setup to crawl websites.
+
+-------> Adding new Domains to crawl with Nutch
+
+-> create an empty directory. Add a textfile containing a list of seed URLs.
+
+$ mkdir seed
+$ echo "http://www.vit.edu.in" >> seed/urls.txt
+$ echo "https://www.another.com" >> seed/urls.txt
+$ echo "https://www.example.com" >> seed/urls.txt
+
+-> inject them into Nutch by giving a file URL (!)
+
+$ $NUTCH_ROOT/runtime/local/bin/nutch inject file:///path/to/seed/
+
+
+
+III. Crawling websites :
+----> Actual Crawling Procedure
+
+-> Generate a new set of URLs to fetch. This is is based on both the injected URLs as well as outdated URLs in the Nutch crawl db.
+
+$ $NUTCH_ROOT/runtime/local/bin/nutch generate -topN 9999
+The above command will create job batches for 9999 URLs.
+
+-> Fetch the URLs. We are not clustering, so we can simply fetch all batches:
+
+$ $NUTCH_ROOT/runtime/local/bin/nutch fetch -all
+
+-> Now we parse all fetched pages:
+
+$ $NUTCH_ROOT/runtime/local/bin/nutch parse -all
+
+-> Last step: Update Nutch's internal database:
+
+$ $NUTCH_ROOT/runtime/local/bin/nutch updatedb -all
+
+
+On the first run, this will only crawl the injected URLs. The procedure above is supposed to be repeated regulary to keep the index up to date.
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SECTION II
+
+IV.  Setting up elasticsearch and integrating algorithm  :
+
+The algorithm works as follows the keyword is searched through the entire crawled  pages, as if now we have cached 500 pages for a enterprise search. Initially the frequency of the keyword in the search query is through the document and assign weights accordingly.Thus after acquiring the weights the highest weighted paragraphs will be displayed in the search results .Thus vectors will be calcuated and most relevant paragraphs will be shown.
+
+All the content crawled is stored in json format thus making it  compatible to all other programming languages to work with.
+
+I. Code:
+
+//  Initiate curl
+$ch = curl_init();
+// Disable SSL verification
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+// Will return the response, if false it print the response
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// Set the url
+curl_setopt($ch, CURLOPT_URL,$url);
+// Execute
+$result=curl_exec($ch);
+// Closing
+curl_close($ch);
+
+$testing123 = json_decode($result, true);
+
+//echo "Meh";
+
+
+$variable1 = $testing123["hits"]["hits"][0]["_source"]["content"];
+$sizeoftext1 = strlen($variable1);
+
+if($sizeoftext1 >= 100)
+{
+	$start1 = rand(500, $sizeoftext1-2000);
+	// $substring1 = "...".substr( $variable1 , $start1, 350 )."...";
+	//$pos1 = stripos($variable1, $searchquery);
+	
+	
+	$positionarray1 = strpos_all($variable1, $searchquery);
+	
+	if($positionarray1[3]!=NULL)
+	{
+		$pos1=$positionarray1[3]-150;
+	}
+	else if($positionarray1[2]!=NULL)
+	{
+		$pos1=$positionarray1[2]-150;
+	}
+	else if($positionarray1[1]!=NULL)
+	{
+		$pos1=$positionarray1[1]-150;
+	}
+	else
+	{
+		$pos1=$positionarray1[0]-150;
+	}
+	
+	$substring1 = "...".substr( $variable1 , $pos1, 350 )."...";
+
+
+	$url= $testing123["hits"]["hits"][0]["_source"]["url"];
+	$htmlurl1 = "<a href='".$url."'>Visit Site!</a>";
+	
+	$title1 = $testing123["hits"]["hits"][0]["_source"]["title"];
+	
+	if($_GET['dev']==1)
+	{
+		$vecvalue1 = "<br>Search Vector Value: ".$testing123["hits"]["hits"][0]["_score"];
+	}
+	else
+	{
+		$vecvalue1 = "";
+	}
+}
+else
+{
+	$substring1 = "No Results in Cached Pages";
+	$title1 = "No Results";
+	$htmlurl1 = "";
+	$vecvalue1 = "";
+}
+
+
+II. Elasticsearch code :
+
+import string
+import elasticsearch
+
+def elastic_words(elasticsearch):
+
+var1 = elasticsearch->Parse1
+var2 = elasticsearch->Parse2
+var3 = elasticsearch->Parse3
+var4 = elasticsearch->Parse4
+var5 = elasticsearch->Parse5
+searcharray = [var1, var2, var3, var4, var5];
+
+def find_max_letter_count(word):
+
+alphabet = string.ascii_lowercase
+dictionary = {}
+
+ for letters in alphabet:
+dictionary[letters] = 0
+
+for letters in word:
+ dictionary[letters] += 1
+
+dictionary = sorted(dictionary.items(),
+reverse=True,
+ key=lambda x: x[1])
+
+ for position in range(0, 26):
+print dictionary[position]
+if position != len(dictionary) - 1:
+if dictionary[position + 1][1] < dictionary[position][1]:
+break
+
+finalarray = find_max_letter_count(searcharray)
+
+return finalarray
+
+
+
+IV. Putting Documents into ElasticSearch
+
+-> Use the following command 
+
+$ $NUTCH_ROOT/runtime/local/bin/nutch index -all
+
+
+Inorder to view the content of the site being crawled we can start elasticsearch   and follow the commands given below:
+
+
+i .  curl 'http://localhost:9200'
+
+ii.  localhost:9200/_search?=xyz&pretty=true
+
+
+
+
+
